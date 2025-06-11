@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Spin Pertanyaan</title>
+
+    <!-- Import Google Font Cinzel -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* Header styling */
+      header {
+        max-width: 600px;
+        margin: 20px auto;
+        text-align: center;
+      }
+      header img {
+        height: 100px;
+        display: block;
+        margin: 0 auto;
+      }
+      header h2 {
+        font-family: "Cinzel", serif;
+        font-weight: bold;
+        color: #125e33;
+        margin-top: 8px;
+        font-size: 2em;
+        margin-bottom: -10px;
+      }
+
+      .container {
+        margin-bottom: 40px;
+      }
+      #question-grid {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .question-card {
+        padding: 10px;
+        border: 2px solid #125e33;
+        text-align: center;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .question-card img {
+        max-width: 40px;
+      }
+      .question-card.highlight {
+        background-color: #8fd0aa;
+      }
+      .question-card.disabled {
+        background-color: #eee;
+        opacity: 0.4;
+        pointer-events: none;
+      }
+      #question-display {
+        text-align: center;
+        margin: 30px auto;
+      }
+      #question-content {
+        font-size: 2em;
+        margin-top: 20px;
+      }
+      #selected-number {
+        text-align: center;
+        font-size: 1.3em;
+        margin-top: 20px;
+        color: #125e33;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="logo-dark.png" alt="Logo" />
+      <h2 style="color: #ffffff">
+        Malam Final<br />
+        Dimas Diajeng Kota Jogja 2025
+      </h2>
+    </header>
+
+    <div class="container">
+      <!-- <h2>Pertanyaan</h2> -->
+      <div id="question-display">
+        <img id="question-logo" src="logo.png" alt="Logo Pertanyaan" /
+        style="display: none;">
+        <div id="selected-number"></div>
+        <div id="question-content"></div>
+        <video id="question-video" controls hidden></video>
+      </div>
+      <button id="spin-btn">Pilih Pertanyaan</button>
+      <p class="hint">
+        Klik tombol atau tekan spasi untuk memilih pertanyaan secara acak.
+      </p>
+    </div>
+
+    <div id="question-grid" class="grid" style="margin-top: -10px"></div>
+
+    <audio id="spin-sound" src="spin-sound.mp4"></audio>
+
+    <script>
+      const questions = [
+        { type: "text", content: "Apa hobi favoritmu?", logo: "logo.png" },
+        {
+          type: "text",
+          content: "Ceritakan pengalaman terbaikmu di sekolah.",
+          logo: "logo.png",
+        },
+        { type: "text", content: "Apa cita-cita kamu?", logo: "logo.png" },
+        {
+          type: "video",
+          content: "data_video/pertanyaan1.mp4",
+          logo: "logo.png",
+        },
+        {
+          type: "text",
+          content: "Siapa sosok yang paling kamu kagumi?",
+          logo: "logo.png",
+        },
+        {
+          type: "text",
+          content: "Kalau kamu bisa pergi ke mana pun, kamu mau ke mana?",
+          logo: "logo.png",
+        },
+        {
+          type: "video",
+          content: "data_video/pertanyaan2.mp4",
+          logo: "logo.png",
+        },
+        {
+          type: "text",
+          content: "Apa buku atau film yang menginspirasimu?",
+          logo: "logo.png",
+        },
+        {
+          type: "text",
+          content: "Kalau bisa punya kekuatan super, kamu ingin bisa apa?",
+          logo: "logo.png",
+        },
+        {
+          type: "text",
+          content: "Apa kenangan masa kecil yang paling kamu ingat?",
+          logo: "logo.png",
+        },
+      ];
+
+      const gridContainer = document.getElementById("question-grid");
+      const questionContent = document.getElementById("question-content");
+      const questionLogo = document.getElementById("question-logo");
+      const questionVideo = document.getElementById("question-video");
+      const spinBtn = document.getElementById("spin-btn");
+      const spinSound = document.getElementById("spin-sound");
+      const selectedNumber = document.getElementById("selected-number");
+
+      gridContainer.style.display = "none";
+
+      function revealGridAfterSound() {
+        spinSound.play();
+        setTimeout(() => {
+          gridContainer.style.display = "grid";
+          buildGrid();
+        }, 3000);
+      }
+
+      function buildGrid() {
+        gridContainer.innerHTML = "";
+        questions.forEach((q, index) => {
+          const card = document.createElement("div");
+          card.className = "question-card";
+          card.dataset.index = index;
+          card.innerHTML = `<img src="${
+            q.logo
+          }" alt="logo pertanyaan"><div>Pertanyaan ${index + 1}</div>`;
+          gridContainer.appendChild(card);
+        });
+      }
+
+      function spinQuestion() {
+        let availableCards = [
+          ...gridContainer.querySelectorAll(".question-card:not(.disabled)"),
+        ];
+        if (availableCards.length === 0) {
+          alert("Semua pertanyaan sudah dipilih!");
+          return;
+        }
+
+        // Disable all cards temporarily
+        availableCards.forEach((card) => {
+          card.style.pointerEvents = "none";
+        });
+
+        const availableIndexes = availableCards.map((el) =>
+          parseInt(el.dataset.index)
+        );
+        const randomIndex =
+          availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+        spinSound.currentTime = 0;
+        spinSound.play();
+
+        let step = 0;
+        const duration = 10000;
+        const totalSteps = 100;
+        const intervalTime = duration / totalSteps;
+
+        const cards = [...gridContainer.querySelectorAll(".question-card")];
+        const highlightInterval = setInterval(() => {
+          cards.forEach((c) => c.classList.remove("highlight"));
+          const current = cards[step % cards.length];
+          if (!current.classList.contains("disabled")) {
+            current.classList.add("highlight");
+          }
+          step++;
+          if (step >= totalSteps) {
+            clearInterval(highlightInterval);
+
+            cards.forEach((c) => c.classList.remove("highlight"));
+
+            const selected = questions[randomIndex];
+            questionLogo.src = selected.logo;
+            selectedNumber.textContent = `Pertanyaan Nomor ${randomIndex + 1}`;
+            questionContent.style.fontSize = "2em";
+
+            if (selected.type === "text") {
+              questionContent.textContent = selected.content;
+              questionContent.hidden = false;
+              questionVideo.hidden = true;
+              questionVideo.pause();
+            } else {
+              questionContent.hidden = true;
+              questionVideo.src = selected.content;
+              questionVideo.hidden = false;
+              questionVideo.play();
+            }
+
+            // Remove selected card
+            const selectedCard = gridContainer.querySelector(
+              `.question-card[data-index="${randomIndex}"]`
+            );
+            selectedCard.remove();
+
+            // Re-enable remaining cards
+            [...gridContainer.querySelectorAll(".question-card")].forEach(
+              (c) => {
+                c.style.pointerEvents = "auto";
+              }
+            );
+          }
+        }, intervalTime);
+      }
+
+      spinBtn.addEventListener("click", spinQuestion);
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          spinQuestion();
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        revealGridAfterSound();
+      });
+    </script>
+  </body>
+</html>
