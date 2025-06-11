@@ -96,6 +96,7 @@
         <div id="selected-number"></div>
         <div id="question-content"></div>
         <video id="question-video" controls hidden></video>
+        <iframe id="question-iframe" hidden width="100%" height="315" frameborder="0"></iframe>
       </div>
       <button id="spin-btn">Pilih Pertanyaan</button>
       <p class="hint">
@@ -230,10 +231,45 @@
             questionContent.style.fontSize = "2em";
 
             if (selected.type === "text") {
-              questionContent.textContent = selected.content;
-              questionContent.hidden = false;
-              questionVideo.hidden = true;
-              questionVideo.pause();
+  questionContent.textContent = selected.content;
+  questionContent.hidden = false;
+  questionVideo.hidden = true;
+  questionVideo.pause();
+  questionIframe.hidden = true;
+  questionIframe.src = "";
+} else if (selected.content.includes("youtube.com") || selected.content.includes("youtu.be") || selected.content.includes("drive.google.com")) {
+  questionContent.hidden = true;
+  questionVideo.hidden = true;
+  questionVideo.pause();
+
+  let embedUrl = "";
+
+  if (selected.content.includes("youtube.com") || selected.content.includes("youtu.be")) {
+    // Handle YouTube
+    const videoId = selected.content.includes("youtube.com")
+      ? new URL(selected.content).searchParams.get("v")
+      : selected.content.split("/").pop();
+    embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  } else if (selected.content.includes("drive.google.com")) {
+    // Handle Google Drive
+    const fileId = selected.content.match(/[-\w]{25,}/);
+    if (fileId) {
+      embedUrl = `https://drive.google.com/file/d/${fileId[0]}/preview`;
+    }
+  }
+
+  questionIframe.src = embedUrl;
+  questionIframe.hidden = false;
+} else {
+  // Local .mp4
+  questionContent.hidden = true;
+  questionIframe.hidden = true;
+  questionIframe.src = "";
+  questionVideo.src = selected.content;
+  questionVideo.hidden = false;
+  questionVideo.play();
+}
+
             } else {
               questionContent.hidden = true;
               questionVideo.src = selected.content;
